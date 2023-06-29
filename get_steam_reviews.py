@@ -2,6 +2,7 @@ import requests
 
 def get_reviews(appid, params={'json':1}):
        url = 'https://store.steampowered.com/appreviews/'
+       params['appid'] = appid
        response = requests.get(url=url+appid, params=params, headers={'User-Agent': 'Mozilla/5.0'})
        return response.json()
 
@@ -24,8 +25,10 @@ def get_n_reviews(appid, n=100):
 
        response = get_reviews(appid, params)
        cursor = response['cursor']
+       for review in response['reviews']:
+            review['appid'] = appid
        reviews += response['reviews']
-
+       
        if len(response['reviews']) < 100: break
 
    return reviews
@@ -50,7 +53,7 @@ reviews = []
 appids = get_n_appids(500)
 for appid in appids:
    reviews += get_n_reviews(appid, 100)
-df = pd.DataFrame(reviews)[['review', 'voted_up']]
+df = pd.DataFrame(reviews)[['appid', 'author', 'review', 'voted_up']]
 df.to_csv('steam_reviews.csv', index=False)
 
 
